@@ -31,13 +31,13 @@ namespace TopTenMoviesAPI.Controllers
                 if (movies.Count == 0)
                 {
                     _response.IsSuccess = true;
-                    _response.Result = [];
+                    _response.Data = [];
                     _response.StatusCode = HttpStatusCode.NoContent;
                     _response.ErrorMessages = new List<string> { "No movies exist to retrieve" };
                     return NotFound(_response);
                 }
                 _response.IsSuccess = true;
-                _response.Result = movies;
+                _response.Data = movies;
                 _response.StatusCode = HttpStatusCode.OK;
                 _response.ErrorMessages = new List<string>();
                 return Ok(_response);

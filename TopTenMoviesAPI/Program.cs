@@ -38,7 +38,6 @@ var app = builder.Build();
 
 //Enable CORS
 app.UseCors("AllowAnyOrigin");
-string swaggerJsonPath = "/swagger/v1/swagger.json";
 
 // Ensure the database is created
 using (var scope = app.Services.CreateScope())
@@ -51,18 +50,10 @@ using (var scope = app.Services.CreateScope())
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.ConfigObject.AdditionalItems["syntaxHighlight"] = new Dictionary<string, object>
-        {
-            ["activated"] = false
-        };
-        c.SwaggerEndpoint(swaggerJsonPath, "TopTenMovies V1");
-    }); 
+    app.UseSwaggerUI(); 
 }
 else
 {
-    swaggerJsonPath = $"/WebApi{swaggerJsonPath}";
 
     app.UseExceptionHandler("/Home/Error");
 

@@ -7,7 +7,7 @@ namespace TopTenMoviesAPI.Models
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int MovieId { get; set; }
+        public int Id { get; set; }
         [Required]
         public string Title { get; set; }
         [Required]

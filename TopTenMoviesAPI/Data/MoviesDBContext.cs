@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using TopTenMoviesAPI.Models;
 
 namespace TopTenMoviesAPI.Data
@@ -25,8 +24,8 @@ namespace TopTenMoviesAPI.Data
         {
             modelBuilder.Entity<Movie>(entity =>
             {
-                entity.HasKey(m => m.MovieId);
-                entity.Property(m => m.MovieId).ValueGeneratedOnAdd();
+                entity.HasKey(m => m.Id);
+                entity.Property(m => m.Id).ValueGeneratedOnAdd();
                 entity.Property(m => m.Title).IsRequired();
                 entity.Property(m => m.Category).IsRequired();
                 entity.Property(m => m.Rate).IsRequired();

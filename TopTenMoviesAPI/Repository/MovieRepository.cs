@@ -14,7 +14,7 @@ namespace TopTenMoviesAPI.Repository
         }
         public async Task<List<Movie>> GetMovies()
         {
-            List<Movie> movieList = await _context.Movies.ToListAsync();
+            List<Movie> movieList = await _context.Movies.OrderByDescending(m => m.Rate).ToListAsync();
             return movieList;
         }
 
