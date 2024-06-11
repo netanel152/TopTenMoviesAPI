@@ -43,14 +43,15 @@ app.UseCors("AllowAnyOrigin");
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<MoviesDBContext>();
-    dbContext.Database.EnsureCreated();
+    dbContext.Database.Migrate();
     if (!dbContext.Movies.Any())
     {
         dbContext.SeedData();
     }
 }
 
-string binPath = Path.Combine(Directory.GetCurrentDirectory(), "bin", "Debug", "net8.0", "Images");
+
+string binPath = Path.Combine(Directory.GetCurrentDirectory(), "Images");
 if (!Directory.Exists(binPath))
 {
     Directory.CreateDirectory(binPath);

@@ -82,11 +82,6 @@ public class MovieRepository : IMovieRepository
 
     public async Task<Movie?> GetSingleMovieByTitle(string title)
     {
-        if (string.IsNullOrWhiteSpace(title))
-        {
-            _logger.LogWarning($"{nameof(MovieRepository)} => {nameof(GetSingleMovieByTitle)} => Message: Title is null or empty");
-            return null;
-        }
         return await _context.Movies.FirstOrDefaultAsync(movie => movie.Title == title);
     }
 

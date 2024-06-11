@@ -1,4 +1,5 @@
 ﻿using TopTenMoviesAPI.Context.Entities;
+using TopTenMoviesAPI.Helpers;
 using TopTenMoviesAPI.Models.Dto;
 using TopTenMoviesAPI.Repositories.Interfaces;
 using TopTenMoviesAPI.Services.Interfaces;
@@ -46,6 +47,13 @@ public class MovieService : IMovieService
 
         try
         {
+            var validationResult = ValdiateHelper.ValidateMovieDto(createMovieDto);
+            if (!validationResult.IsValid)
+            {
+                _logger.LogWarning($"{nameof(MovieService)} => {nameof(CreateMovie)} => {validationResult.Message}");
+                return null;
+            }
+
             Movie? existingMovie = await _movieRepository.GetSingleMovieByTitle(createMovieDto.Title);
             if (existingMovie != null)
             {
@@ -53,26 +61,26 @@ public class MovieService : IMovieService
                 throw new InvalidOperationException($"Movie with title '{createMovieDto.Title}' already exists.");
             }
 
-            Movie? lowestRatedMovie = await _movieRepository.GetMovieWithLowestRate();
-            if (lowestRatedMovie != null)
+            string binPath = Path.Combine(Directory.GetCurrentDirectory(), "Images");
+            string imagePath = Path.Combine(binPath, createMovieDto.ImagePath.FileName);
+            try
             {
-                await _movieRepository.DeleteMovie(lowestRatedMovie.Id);
-                _logger.LogInformation($"{nameof(MovieService)} => {nameof(CreateMovie)} => Message: Removed movie with ID {lowestRatedMovie.Id} having the lowest rate");
+                using var stream = new FileStream(imagePath, FileMode.Create);
+                await createMovieDto.ImagePath.CopyToAsync(stream);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"{nameof(MovieService)} => {nameof(CreateMovie)} => Error while saving image: {ex.Message}");
+                throw new InvalidOperationException("Error saving image.", ex);
             }
 
-            //string binPath = Path.Combine(Directory.GetCurrentDirectory(), "bin", "Debug", "net8.0", "Images");
-            //string imagePath = Path.Combine(binPath, createMovieDto.ImagePath.FileName);
-            //using (var stream = new FileStream(imagePath, FileMode.Create))
-            //{
-            //    await createMovieDto.ImagePath.CopyToAsync(stream);
-            //}
 
             Movie newMovie = new()
             {
                 Title = createMovieDto.Title,
                 Category = createMovieDto.Category,
-                Rate = createMovieDto.Rate
-                //ImagePath = createMovieDto.ImagePath.FileName
+                Rate = createMovieDto.Rate,
+                ImagePath = imagePath
             };
 
             int result = await _movieRepository.CreateMovie(newMovie);
@@ -82,13 +90,20 @@ public class MovieService : IMovieService
                 return null;
             }
 
+            Movie? lowestRatedMovie = await _movieRepository.GetMovieWithLowestRate();
+            if (lowestRatedMovie != null)
+            {
+                await _movieRepository.DeleteMovie(lowestRatedMovie.Id);
+                _logger.LogInformation($"{nameof(MovieService)} => {nameof(CreateMovie)} => Message: Removed movie with ID {lowestRatedMovie.Id} having the lowest rate");
+            }
+
             return newMovie;
 
         }
         catch (Exception ex)
         {
             _logger.LogError($"{nameof(MovieService)} => {nameof(CreateMovie)} => Exception: {ex.Message}");
-            throw; // Rethrow the exception for the caller to handle
+            throw;
         }
     }
 
@@ -106,6 +121,12 @@ public class MovieService : IMovieService
             if (movie == null)
             {
                 _logger.LogWarning($"{nameof(MovieService)} => {nameof(UpdateMovie)} => Message: Movie with ID {movieDto.Id} not found");
+                return null;
+            }
+
+            if (movieDto.Rate == 0 || movieDto.Rate < 10)
+            {
+                _logger.LogWarning($"{nameof(MovieService)} => {nameof(CreateMovie)} => Message: Rate should between 1-10");
                 return null;
             }
 
