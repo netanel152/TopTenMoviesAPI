@@ -1,13 +1,15 @@
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.OpenApi.Models;
 using Serilog;
-using TopTenMoviesAPI.Data;
-using TopTenMoviesAPI.Repository;
+using TopTenMoviesAPI.Context;
+using TopTenMoviesAPI.Repositories;
+using TopTenMoviesAPI.Repositories.Interfaces;
+using TopTenMoviesAPI.Services;
+using TopTenMoviesAPI.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -16,9 +18,9 @@ builder.Services.AddSwaggerGen(c =>
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Top Ten Movies API", Version = "v1" });
 });
 
+builder.Services.AddScoped<IMovieService, MovieService>();
 builder.Services.AddScoped<IMovieRepository, MovieRepository>();
 
-// Configure SQLite database connection
 var connectionString = builder.Configuration.GetConnectionString("MoviesDatabase");
 builder.Services.AddDbContext<MoviesDBContext>(options =>
     options.UseSqlite(connectionString));
@@ -36,21 +38,34 @@ builder.Host.UseSerilog((context, configuration) => configuration
 
 var app = builder.Build();
 
-//Enable CORS
 app.UseCors("AllowAnyOrigin");
 
-// Ensure the database is created
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<MoviesDBContext>();
-    dbContext.Database.EnsureCreated(); // This ensures that the database is created if it does not exist
+    dbContext.Database.EnsureCreated();
+    if (!dbContext.Movies.Any())
+    {
+        dbContext.SeedData();
+    }
 }
 
-// Configure the HTTP request pipeline.
+string binPath = Path.Combine(Directory.GetCurrentDirectory(), "bin", "Debug", "net8.0", "Images");
+if (!Directory.Exists(binPath))
+{
+    Directory.CreateDirectory(binPath);
+}
+
+app.UseStaticFiles(new StaticFileOptions()
+{
+    FileProvider = new PhysicalFileProvider(binPath),
+    RequestPath = "/Images"
+});
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(); 
+    app.UseSwaggerUI();
 }
 else
 {
@@ -76,7 +91,6 @@ app.UseExceptionHandler(errorApp =>
         if (exceptionHandlerFeature != null)
         {
             Log.Error($"An unhandled exception occurred: {exceptionHandlerFeature.Error}");
-            // Return an appropriate error response to the client
             context.Response.StatusCode = 500;
             await context.Response.WriteAsync("An unexpected error occurred. Please try again later.");
         }
