@@ -4,14 +4,22 @@ namespace TopTenMoviesAPI.Helpers
 {
     public static class ValdiateHelper
     {
-        public static (bool IsValid, string Message) ValidateMovieDto(BaseMovieDto movieDto)
+        public static (bool IsValid, string Message) ValidateMovieDto(BaseMovieDto baseMovieDto)
         {
-            if (movieDto.Rate < Constants.MinRate || movieDto.Rate > Constants.MaxRate)
+            if (baseMovieDto == null)
+            {
+                return (false, Constants.MovieObjectIsNull);
+
+            }
+
+            if (baseMovieDto.Rate < Constants.MinRate || baseMovieDto.Rate > Constants.MaxRate)
             {
                 return (false, Constants.MovieRateInvalidMessage);
             }
 
-            if (string.IsNullOrWhiteSpace(movieDto.Title) || string.IsNullOrWhiteSpace(movieDto.Category))
+            if (string.IsNullOrWhiteSpace(baseMovieDto.Title) ||
+                string.IsNullOrWhiteSpace(baseMovieDto.Category) ||
+                string.IsNullOrEmpty(baseMovieDto.ImagePath))
             {
                 return (false, Constants.MovieTitleOrCategoryRequiredMessage);
             }

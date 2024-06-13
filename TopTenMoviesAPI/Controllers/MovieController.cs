@@ -28,13 +28,14 @@ namespace TopTenMoviesAPI.Controllers
 
             try
             {
-                List<Movie> movies = await _moviesService.GetMoviesByFilter(filterMovieDto);
+                List<Movie>? movies = await _moviesService.GetMoviesByFilter(filterMovieDto);
                 if (movies.Count == 0)
                 {
                     _response.IsSuccess = true;
                     _response.Data = [];
                     _response.StatusCode = HttpStatusCode.NoContent;
                     _response.ErrorMessage = "No movies exist to retrieve";
+                    _logger.LogWarning($"{nameof(MovieController)} => {nameof(Post)} => {_response.ErrorMessage}");
                     return NotFound(_response);
                 }
                 _response.IsSuccess = true;
@@ -53,6 +54,41 @@ namespace TopTenMoviesAPI.Controllers
             }
         }
 
+        [HttpPost("/create-movie")]
+        public async Task<ActionResult<APIResponse<Movie>>> Post(CreateMovieDto createMovieDto)
+        {
+            _logger.LogInformation($"{nameof(MovieController)} => {nameof(Post)} => Message: Starting POST Request /create-movie");
+            APIResponse<Movie> _response = new();
+
+            try
+            {
+                Movie? createdMovie = await _moviesService.CreateMovie(createMovieDto);
+
+                if (createdMovie == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.ErrorMessage = "Failed to create the movie";
+                    _logger.LogWarning($"{nameof(MovieController)} => {nameof(Post)} => {_response.ErrorMessage}");
+                    return BadRequest(_response);
+                }
+
+                _response.IsSuccess = true;
+                _response.Data = createdMovie;
+                _response.StatusCode = HttpStatusCode.Created;
+                return Ok(_response);
+
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                _response.ErrorMessage = ex.Message;
+                _logger.LogError(ex, $"{nameof(MovieController)} => {nameof(Post)} => Exception: {ex.Message}");
+                return BadRequest(_response);
+            }
+        }
+
         [HttpPut("/update-movie")]
         public async Task<ActionResult<APIResponse<Movie>>> Put(MovieDto movieDto)
         {
@@ -61,13 +97,14 @@ namespace TopTenMoviesAPI.Controllers
 
             try
             {
-                Movie updatedMovie = await _moviesService.UpdateMovie(movieDto);
+                Movie? updatedMovie = await _moviesService.UpdateMovie(movieDto);
                 if (updatedMovie is null)
                 {
                     _response.IsSuccess = false;
                     _response.Data = null;
                     _response.StatusCode = HttpStatusCode.NotFound;
-                    _response.ErrorMessage = "";
+                    _response.ErrorMessage = "Failed to update the movie";
+                    _logger.LogWarning($"{nameof(MovieController)} => {nameof(Post)} => {_response.ErrorMessage}");
                     return BadRequest(_response);
                 }
 
@@ -87,39 +124,6 @@ namespace TopTenMoviesAPI.Controllers
             }
         }
 
-        [HttpPost("/create-movie")]
-        public async Task<ActionResult<APIResponse<Movie>>> Post(CreateMovieDto createMovieDto)
-        {
-            _logger.LogInformation($"{nameof(MovieController)} => {nameof(Post)} => Message: Starting POST Request /create-movie");
-            APIResponse<Movie> _response = new();
-
-            try
-            {
-                Movie? createdMovie = await _moviesService.CreateMovie(createMovieDto);
-
-                if (createdMovie == null)
-                {
-                    _logger.LogWarning($"{nameof(MovieController)} => {nameof(Post)} => Failed to create the movie");
-                    _response.IsSuccess = false;
-                    _response.StatusCode = HttpStatusCode.BadRequest;
-                    _response.ErrorMessage = "Failed to create the movie";
-                    return BadRequest(_response);
-                }
-
-                _response.IsSuccess = true;
-                _response.Data = createdMovie;
-                _response.StatusCode = HttpStatusCode.Created;
-                return Ok(_response);
-
-            }
-            catch (Exception ex)
-            {
-                _response.IsSuccess = false;
-                _response.StatusCode = HttpStatusCode.BadRequest;
-                _response.ErrorMessage = ex.Message;
-                _logger.LogError(ex, $"{nameof(MovieController)} => {nameof(Post)} => Exception: {ex.Message}");
-                return BadRequest(_response);
-            }
-        }
+        
     }
 }

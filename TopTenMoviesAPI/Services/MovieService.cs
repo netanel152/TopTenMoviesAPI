@@ -39,20 +39,15 @@ public class MovieService : IMovieService
 
     public async Task<Movie?> CreateMovie(CreateMovieDto createMovieDto)
     {
-        if (createMovieDto == null)
+        var (IsValid, Message) = ValdiateHelper.ValidateMovieDto(createMovieDto);
+        if (!IsValid)
         {
-            _logger.LogWarning($"{nameof(MovieService)} => {nameof(CreateMovie)} => Message: movieDto is null");
+            _logger.LogWarning($"{nameof(MovieService)} => {nameof(CreateMovie)} => {Message}");
             return null;
         }
 
         try
         {
-            var validationResult = ValdiateHelper.ValidateMovieDto(createMovieDto);
-            if (!validationResult.IsValid)
-            {
-                _logger.LogWarning($"{nameof(MovieService)} => {nameof(CreateMovie)} => {validationResult.Message}");
-                return null;
-            }
 
             Movie? existingMovie = await _movieRepository.GetSingleMovieByTitle(createMovieDto.Title);
             if (existingMovie != null)
@@ -77,7 +72,7 @@ public class MovieService : IMovieService
             }
 
             Movie? lowestRatedMovie = await _movieRepository.GetMovieWithLowestRate();
-            if (lowestRatedMovie != null && lowestRatedMovie != newMovie)
+            if (lowestRatedMovie != null && lowestRatedMovie.Id != newMovie.Id)
             {
                 await _movieRepository.DeleteMovie(lowestRatedMovie.Id);
                 _logger.LogInformation($"{nameof(MovieService)} => {nameof(CreateMovie)} => Message: Removed movie with ID {lowestRatedMovie.Id} having the lowest rate");
@@ -95,24 +90,21 @@ public class MovieService : IMovieService
 
     public async Task<Movie?> UpdateMovie(MovieDto movieDto)
     {
-        if (movieDto == null)
+
+        var (IsValid, Message) = ValdiateHelper.ValidateMovieDto(movieDto);
+        if (!IsValid)
         {
-            _logger.LogWarning($"{nameof(MovieService)} => {nameof(UpdateMovie)} => Message: movieDto is null");
+            _logger.LogWarning($"{nameof(MovieService)} => {nameof(CreateMovie)} => {Message}");
             return null;
         }
 
         try
         {
+
             Movie? movie = await _movieRepository.GetSingleMovie(movieDto.Id);
             if (movie == null)
             {
                 _logger.LogWarning($"{nameof(MovieService)} => {nameof(UpdateMovie)} => Message: Movie with ID {movieDto.Id} not found");
-                return null;
-            }
-
-            if (movieDto.Rate < 0 || movieDto.Rate > 10)
-            {
-                _logger.LogWarning($"{nameof(MovieService)} => {nameof(CreateMovie)} => Message: Rate should between 0-10");
                 return null;
             }
 
