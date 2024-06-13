@@ -1,7 +1,3 @@
-Sure, here's the updated README section:
-
----
-
 ## Getting Started
 
 ### Initial Setup
