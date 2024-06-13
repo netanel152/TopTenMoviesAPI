@@ -23,21 +23,18 @@ public class MovieRepository : IMovieRepository
 
         switch (filterMovieDto.SearchType)
         {
-            case SearchTypeEnum.Rate:
-                query = query.OrderByDescending(movie => movie.Rate);
-                break;
-
-            case SearchTypeEnum.Category:
-                if (!string.IsNullOrEmpty(filterMovieDto.CategoryValue))
-                {
-                    query = query.Where(w => w.Category == filterMovieDto.CategoryValue);
-                }
-                break;
-
             case SearchTypeEnum.Title:
                 if (!string.IsNullOrEmpty(filterMovieDto.SearchValue))
                 {
                     query = query.Where(w => w.Title.ToLower().Contains(filterMovieDto.SearchValue.ToLower()));
+                }
+                break;
+
+            case SearchTypeEnum.Rate:
+                query = query.OrderByDescending(movie => movie.Rate);
+                if (!string.IsNullOrEmpty(filterMovieDto.CategoryValue))
+                {
+                    query = query.Where(w => w.Category == filterMovieDto.CategoryValue);
                 }
                 break;
 
@@ -51,7 +48,7 @@ public class MovieRepository : IMovieRepository
         return await query.ToListAsync();
     }
 
-    public async Task<Movie?> GetSingleMovie(int id)
+    public async Task<Movie?> GetSingleMovie(Guid id)
     {
         return await _context.Movies.FirstOrDefaultAsync(movie => movie.Id == id);
     }
@@ -62,7 +59,7 @@ public class MovieRepository : IMovieRepository
         return await _context.SaveChangesAsync();
     }
 
-    public async Task<int> DeleteMovie(int movieId)
+    public async Task<int> DeleteMovie(Guid movieId)
     {
         var movie = await _context.Movies.FindAsync(movieId);
         if (movie != null)

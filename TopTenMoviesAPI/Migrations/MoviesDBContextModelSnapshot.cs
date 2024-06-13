@@ -19,9 +19,9 @@ namespace TopTenMoviesAPI.Migrations
 
             modelBuilder.Entity("TopTenMoviesAPI.Context.Entities.Movie", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Category")
                         .IsRequired()
@@ -33,9 +33,6 @@ namespace TopTenMoviesAPI.Migrations
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<string>("ImagePath")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("LastUpdatedDate")
                         .HasColumnType("TEXT");
 
                     b.Property<double>("Rate")

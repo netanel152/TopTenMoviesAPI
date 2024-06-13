@@ -54,7 +54,7 @@ namespace TopTenMoviesAPI.Controllers
         }
 
         [HttpPut("/update-movie")]
-        public async Task<ActionResult<APIResponse<Movie>>> Put([FromForm] MovieDto movieDto)
+        public async Task<ActionResult<APIResponse<Movie>>> Put(MovieDto movieDto)
         {
             _logger.LogInformation($"{nameof(MovieController)} => {nameof(Post)} => Message: Starting PUT Request /update-movie");
             APIResponse<Movie> _response = new();
@@ -68,6 +68,7 @@ namespace TopTenMoviesAPI.Controllers
                     _response.Data = null;
                     _response.StatusCode = HttpStatusCode.NotFound;
                     _response.ErrorMessage = "";
+                    return BadRequest(_response);
                 }
 
                 _response.IsSuccess = true;
@@ -87,7 +88,7 @@ namespace TopTenMoviesAPI.Controllers
         }
 
         [HttpPost("/create-movie")]
-        public async Task<ActionResult<APIResponse<Movie>>> Post([FromForm] CreateMovieDto createMovieDto)
+        public async Task<ActionResult<APIResponse<Movie>>> Post(CreateMovieDto createMovieDto)
         {
             _logger.LogInformation($"{nameof(MovieController)} => {nameof(Post)} => Message: Starting POST Request /create-movie");
             APIResponse<Movie> _response = new();

@@ -1,9 +1,11 @@
-﻿
-namespace TopTenMoviesAPI.Models.Dto
+﻿namespace TopTenMoviesAPI.Models.Dto
 {
-    public class MovieDto : BaseMovieDto
+    public class MovieDto
     {
-        public int Id { get; set; }
-        public string? ImagePath { get; set; }
+        public Guid Id { get; set; }
+        public string Title { get; set; }
+        public string Category { get; set; }
+        public double Rate { get; set; }
+        public string ImagePath { get; set; }
     }
 }

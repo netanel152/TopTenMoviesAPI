@@ -50,19 +50,6 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-
-string binPath = Path.Combine(Directory.GetCurrentDirectory(), "Images");
-if (!Directory.Exists(binPath))
-{
-    Directory.CreateDirectory(binPath);
-}
-
-app.UseStaticFiles(new StaticFileOptions()
-{
-    FileProvider = new PhysicalFileProvider(binPath),
-    RequestPath = "/Images"
-});
-
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

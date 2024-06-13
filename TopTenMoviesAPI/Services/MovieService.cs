@@ -61,26 +61,12 @@ public class MovieService : IMovieService
                 throw new InvalidOperationException($"Movie with title '{createMovieDto.Title}' already exists.");
             }
 
-            string binPath = Path.Combine(Directory.GetCurrentDirectory(), "Images");
-            string imagePath = Path.Combine(binPath, createMovieDto.ImagePath.FileName);
-            try
-            {
-                using var stream = new FileStream(imagePath, FileMode.Create);
-                await createMovieDto.ImagePath.CopyToAsync(stream);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"{nameof(MovieService)} => {nameof(CreateMovie)} => Error while saving image: {ex.Message}");
-                throw new InvalidOperationException("Error saving image.", ex);
-            }
-
-
             Movie newMovie = new()
             {
                 Title = createMovieDto.Title,
                 Category = createMovieDto.Category,
                 Rate = createMovieDto.Rate,
-                ImagePath = imagePath
+                ImagePath = createMovieDto.ImagePath
             };
 
             int result = await _movieRepository.CreateMovie(newMovie);
@@ -91,7 +77,7 @@ public class MovieService : IMovieService
             }
 
             Movie? lowestRatedMovie = await _movieRepository.GetMovieWithLowestRate();
-            if (lowestRatedMovie != null)
+            if (lowestRatedMovie != null && lowestRatedMovie != newMovie)
             {
                 await _movieRepository.DeleteMovie(lowestRatedMovie.Id);
                 _logger.LogInformation($"{nameof(MovieService)} => {nameof(CreateMovie)} => Message: Removed movie with ID {lowestRatedMovie.Id} having the lowest rate");
@@ -124,17 +110,16 @@ public class MovieService : IMovieService
                 return null;
             }
 
-            if (movieDto.Rate == 0 || movieDto.Rate < 10)
+            if (movieDto.Rate < 0 || movieDto.Rate > 10)
             {
-                _logger.LogWarning($"{nameof(MovieService)} => {nameof(CreateMovie)} => Message: Rate should between 1-10");
+                _logger.LogWarning($"{nameof(MovieService)} => {nameof(CreateMovie)} => Message: Rate should between 0-10");
                 return null;
             }
 
             movie.Title = movieDto.Title;
             movie.Category = movieDto.Category;
             movie.Rate = movieDto.Rate;
-            movie.LastUpdatedDate = new DateTime(
-                DateTime.Now.Year,DateTime.Now.Month,DateTime.Now.Day,DateTime.Now.Hour,DateTime.Now.Minute,DateTime.Now.Second);
+           
 
             int result = await _movieRepository.UpdateMovie(movie);
             if (result <= 0)
