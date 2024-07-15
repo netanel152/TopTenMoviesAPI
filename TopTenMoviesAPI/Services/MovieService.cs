@@ -108,6 +108,12 @@ public class MovieService : IMovieService
                 return null;
             }
 
+            if (movie.Title == movieDto.Title)
+            {
+                _logger.LogWarning($"{nameof(MovieService)} => {nameof(CreateMovie)} => Message: Movie with title {movie.Title} already exists");
+                throw new InvalidOperationException($"Movie with title '{movie.Title}' already exists.");
+            }
+
             movie.Title = movieDto.Title;
             movie.Category = movieDto.Category;
             movie.Rate = movieDto.Rate;

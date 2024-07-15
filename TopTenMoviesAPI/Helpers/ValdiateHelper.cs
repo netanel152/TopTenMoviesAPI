@@ -18,8 +18,7 @@ namespace TopTenMoviesAPI.Helpers
             }
 
             if (string.IsNullOrWhiteSpace(baseMovieDto.Title) ||
-                string.IsNullOrWhiteSpace(baseMovieDto.Category) ||
-                string.IsNullOrEmpty(baseMovieDto.ImagePath))
+                string.IsNullOrWhiteSpace(baseMovieDto.Category))
             {
                 return (false, Constants.MovieTitleOrCategoryRequiredMessage);
             }
